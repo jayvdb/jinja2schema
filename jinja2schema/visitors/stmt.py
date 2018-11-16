@@ -201,19 +201,28 @@ def visit_block(ast, macroses=None, config=default_config):
 @visits_stmt(nodes.Include)
 def visit_include(ast, macroses=None, config=default_config, child_blocks=None):
     template = get_inherited_template(config, ast)
+    if not template:
+        return Dictionary()
     return visit_many(template.body, macroses, config)
 
 
 @visits_stmt(nodes.Extends)
 def visit_extends(ast, macroses=None, config=default_config, child_blocks=None):
     template = get_inherited_template(config, ast)
+    if not template:
+        return Dictionary()
     if not child_blocks:
         return visit_many(template.body, macroses, config)
     return visit_many(get_correct_nodes(child_blocks, template.body), None, config)
 
 
 def get_inherited_template(config, ast):
-    env = Environment(loader=PackageLoader(config.PACKAGE_NAME, config.TEMPLATE_DIR))
+    try:
+        env = Environment(loader=PackageLoader(config.PACKAGE_NAME, config.TEMPLATE_DIR))
+    except Exception as e:
+        import sys
+        print('Can not load environment', file=sys.stderr)
+        return
     return env.parse(env.loader.get_source(env, ast.template.value)[0])
 
 
