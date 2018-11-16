@@ -290,6 +290,8 @@ def visit_test(ast, ctx, macroses=None, config=default_config):
             predicted_struct.checked_as_defined = True
         elif ast.name == 'undefined':
             predicted_struct.checked_as_undefined = True
+    elif ast.name == 'exists':
+        predicted_struct = String.from_ast(ast.node, order_nr=config.ORDER_OBJECT.get_next())
     else:
         raise InvalidExpression(ast, 'unknown test "{0}"'.format(ast.name))
     rtype, struct = visit_expr(ast.node, Context(return_struct_cls=Boolean,
@@ -398,13 +400,41 @@ def visit_call(ast, ctx, macroses=None, config=default_config):
         else:
             raise InvalidExpression(ast, '"{0}" call is not supported'.format(ast.node.name))
     elif isinstance(ast.node, nodes.Getattr):
-        if ast.node.attr in ('keys', 'iterkeys', 'values', 'itervalues'):
+        if ast.node.attr in ('keys', 'iterkeys', 'values', 'itervalues', 'items'):
             ctx.meet(List(Unknown()), ast)
             rtype, struct = visit_expr(
                     ast.node.node, Context(
                         predicted_struct=Dictionary.from_ast(ast.node.node, order_nr=config.ORDER_OBJECT.get_next())),
                     macroses, config=config)
             return List(Unknown()), struct
+        if ast.node.attr in ('update'):
+            ctx.meet(List(Unknown()), ast)
+            rtype, struct = visit_expr(
+                    ast.node.node, Context(
+                        predicted_struct=Dictionary.from_ast(ast.node.node, order_nr=config.ORDER_OBJECT.get_next())),
+                    macroses, config=config)
+            return Unknown(), struct
+        if ast.node.attr in ('get'):
+            ctx.meet(Unknown(), ast)
+            rtype, struct = visit_expr(
+                    ast.node.node, Context(
+                        predicted_struct=Dictionary.from_ast(ast.node.node, order_nr=config.ORDER_OBJECT.get_next())),
+                    macroses, config=config)
+            return Unknown(), struct
+        if ast.node.attr in ('append'):
+            ctx.meet(List(Unknown()), ast)
+            rtype, struct = visit_expr(
+                    ast.node.node, Context(
+                        predicted_struct=Unknown.from_ast(ast.node.node, order_nr=config.ORDER_OBJECT.get_next())),
+                    macroses, config=config)
+            return List(Unknown()), struct
+        if ast.node.attr in ('replace'):
+            ctx.meet(String(), ast)
+            rtype, struct = visit_expr(
+                    ast.node.node, Context(
+                        predicted_struct=String.from_ast(ast.node.node, order_nr=config.ORDER_OBJECT.get_next())),
+                    macroses, config=config)
+            return String(), struct
         if ast.node.attr in ('startswith', 'endswith'):
             ctx.meet(Boolean(), ast)
             rtype, struct = visit_expr(
