@@ -400,7 +400,7 @@ def visit_call(ast, ctx, macroses=None, config=default_config):
         else:
             raise InvalidExpression(ast, '"{0}" call is not supported'.format(ast.node.name))
     elif isinstance(ast.node, nodes.Getattr):
-        if ast.node.attr in ('keys', 'iterkeys', 'values', 'itervalues', 'items'):
+        if ast.node.attr in ('keys', 'iterkeys', 'values', 'itervalues', 'items', '__setitem__'):
             ctx.meet(List(Unknown()), ast)
             rtype, struct = visit_expr(
                     ast.node.node, Context(
@@ -428,7 +428,7 @@ def visit_call(ast, ctx, macroses=None, config=default_config):
                         predicted_struct=Unknown.from_ast(ast.node.node, order_nr=config.ORDER_OBJECT.get_next())),
                     macroses, config=config)
             return List(Unknown()), struct
-        if ast.node.attr in ('replace'):
+        if ast.node.attr in ('replace', 'title', 'capitalize'):
             ctx.meet(String(), ast)
             rtype, struct = visit_expr(
                     ast.node.node, Context(
