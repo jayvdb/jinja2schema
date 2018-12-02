@@ -8,7 +8,7 @@ Statement visitors return :class:`.models.Dictionary` of structures of variables
 """
 import functools
 
-from jinja2 import nodes, Environment, PackageLoader
+from jinja2 import nodes, Environment, FileSystemLoader, PackageLoader
 from jinja2schema.config import default_config
 
 from ..model import Scalar, Dictionary, List, Unknown, Tuple, Boolean
@@ -218,7 +218,10 @@ def visit_extends(ast, macroses=None, config=default_config, child_blocks=None):
 
 def get_inherited_template(config, ast):
     try:
-        env = Environment(loader=PackageLoader(config.PACKAGE_NAME, config.TEMPLATE_DIR))
+        if config.PACKAGE_NAME:
+            env = Environment(loader=PackageLoader(config.PACKAGE_NAME, config.TEMPLATE_DIR))
+        else:
+            env = Environment(loader=FileSystemLoader(config.TEMPLATE_DIR))
     except Exception as e:
         import sys
         print('Can not load environment', file=sys.stderr)
