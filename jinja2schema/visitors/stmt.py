@@ -206,6 +206,22 @@ def visit_include(ast, macroses=None, config=default_config, child_blocks=None):
     return visit_many(template.body, macroses, config)
 
 
+@visits_stmt(nodes.Import)
+def visit_import(ast, macroses=None, config=default_config, child_blocks=None):
+    template = get_inherited_template(config, ast)
+    if not template:
+        return Dictionary()
+    return visit_many(template.body, macroses, config)
+
+
+@visits_stmt(nodes.FromImport)
+def visit_fromimport(ast, macroses=None, config=default_config, child_blocks=None):
+    template = get_inherited_template(config, ast)
+    if not template:
+        return Dictionary()
+    return visit_many(template.body, macroses, config)
+
+
 @visits_stmt(nodes.Extends)
 def visit_extends(ast, macroses=None, config=default_config, child_blocks=None):
     template = get_inherited_template(config, ast)
