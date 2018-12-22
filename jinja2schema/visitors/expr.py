@@ -421,7 +421,7 @@ def visit_call(ast, ctx, macroses=None, config=default_config):
                         predicted_struct=Dictionary.from_ast(ast.node.node, order_nr=config.ORDER_OBJECT.get_next())),
                     macroses, config=config)
             return Unknown(), struct
-        if ast.node.attr in ('append'):
+        if ast.node.attr in ('append', 'remove'):
             ctx.meet(List(Unknown()), ast)
             rtype, struct = visit_expr(
                     ast.node.node, Context(
