@@ -392,7 +392,7 @@ def visit_call(ast, ctx, macroses=None, config=default_config):
                                                    config=config)
                 struct = merge(struct, arg_struct)
             return String(), struct
-        elif ast.node.name == 'dict':
+        elif ast.node.name in ('dict', 'namespace'):
             ctx.meet(Dictionary(), ast)
             if ast.args:
                 raise InvalidExpression(ast, 'dict accepts only keyword arguments')

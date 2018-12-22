@@ -118,11 +118,14 @@ def visit_if(ast, macroses=None, config=default_config, child_blocks=None):
 @visits_stmt(nodes.Assign)
 def visit_assign(ast, macroses=None, config=default_config, child_blocks=None):
     struct = Dictionary()
-    if (isinstance(ast.target, nodes.Name) or
+    if (isinstance(ast.target, (nodes.Name, nodes.NSRef)) or
             (isinstance(ast.target, nodes.Tuple) and isinstance(ast.node, nodes.Tuple))):
         variables = []
         if not (isinstance(ast.target, nodes.Tuple) and isinstance(ast.node, nodes.Tuple)):
-            variables.append((ast.target.name, ast.node))
+            if isinstance(ast.target, nodes.NSRef):
+                variables.append((ast.target.name + '.' + ast.target.attr, ast.node))
+            else:
+                variables.append((ast.target.name, ast.node))
         else:
             if len(ast.target.items) != len(ast.node.items):
                 raise InvalidExpression(ast, 'number of items in left side is different '
@@ -148,7 +151,7 @@ def visit_assign(ast, macroses=None, config=default_config, child_blocks=None):
             ast.node, Context(return_struct_cls=Unknown, predicted_struct=Tuple(tuple_items)), macroses, config)
         return merge(struct, var_struct)
     else:
-        raise InvalidExpression(ast, 'unsupported assignment')
+        raise InvalidExpression(ast, 'unsupported assignment {}'.format(ast.target))
 
 
 @visits_stmt(nodes.Output)
